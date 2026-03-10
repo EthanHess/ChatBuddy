@@ -9,6 +9,8 @@ import SwiftUI
 
 struct ContentView: View {
     
+    //MARK: May want middleman model here, this is a small simple app but tying view directly to data isn't always best option
+    
     @Environment(MessageController.self) var messageController
     @State private var curText : String = ""
     
@@ -17,11 +19,15 @@ struct ContentView: View {
             VStack {
                 Spacer()
                 //SV -> LVS more versatile than List in some cases, especially for custom layouts
+                //NOTE: lazy lazily loads views but not necessarily data
                 ScrollView {
                     LazyVStack {
                         ForEach(messageController.messages) { message in
                             Spacer()
                             MessageBubble(authorUID: message.authourUID, messageBody: message.messageBody).frame(width: geo.size.width * 0.8, height: 100)
+                            
+                            //MARK: Messages will appear when added but if we ever reload the entire chat may want to paginate (on view appear)
+                            
                             Spacer()
                         }
                     }

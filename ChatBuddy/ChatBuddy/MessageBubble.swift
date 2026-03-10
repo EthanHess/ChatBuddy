@@ -13,18 +13,21 @@ struct MessageBubble: View {
     var messageBody : String
     var body: some View {
         HStack {
-            if authorUID == 0 {
-                Spacer()
+            if authorUID == 0 { Spacer() }
+            HStack(spacing: 10) {
+                Image(systemName: "globe.americas.fill")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 50)
+                Text(messageBody)
+                    .lineLimit(nil)
             }
-            HStack {
-                Image(systemName: "globe.americas.fill").resizable().scaledToFit().frame(width: 50)
-                Text("\(messageBody)")
-            }.padding()
-            if authorUID == 1 {
-                Spacer()
-            }
-        }.background(
-            authorUID == 0 ? .cyan : .green
-        ).cornerRadius(10).padding(.horizontal)
+            .padding(12)
+            .background(authorUID == 0 ? Color.cyan : Color.green)
+            .cornerRadius(10)
+            .frame(maxWidth: 250, alignment: authorUID == 0 ? .trailing : .leading)
+            if authorUID == 1 { Spacer() }
+        }
+        .padding(.horizontal)
     }
 }

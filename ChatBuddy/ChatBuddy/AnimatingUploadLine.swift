@@ -8,7 +8,7 @@
 import SwiftUI
 
 
-//MARK: Text field + response animation
+//MARK: Text field + response animation (add progress text)
 struct AnimatingUploadLine : View {
     @State private var progress: CGFloat = 0
 
