@@ -13,12 +13,63 @@ class NeuralLanguageModel {
     typealias Vector = [Float] //Vectors have direction and magnitude in a 3D space
     var embeddings: [String: Vector] = [:] //tokens mapped -> vector
     
+    var embeddingSize: Int {
+        return embeddings.values.first?.count ?? 0
+    }
+    
     //tokens (bits of words) that are related are closer in the vector space (like, "hiking", "lake" and "mountains" may be near each other but "computer" is somewhere else, off with "keyboard")
     
-    typealias Sequence = [[Float]]
+    //Was named "Sequence" but that exists in Swift so change
+    typealias Matrix = [[Float]]
+    
+    var layers : [LinearLayer] = []
+    var tokens : [String] = []
     
     init() {
+        //properties already initialized as empty array but may be time we'd want to pass them in here on init
+    }
+    
+    func embed(input: [String]) -> Matrix {
+        return input.map { token in
+            return embeddings[token] != nil ? embeddings[token]! : [Float](repeating: 0, count: embeddingSize)
+        }
+    }
+    
+    func combineEmbeddings(_ vectors: Matrix) -> Vector {
+        return vectors.flatMap { $0 }
+    }
+    
+    func forward(_ tokens: [String]) -> Vector {
+        let embeddedTokens = embed(input: tokens)
+        let input = combineEmbeddings(embeddedTokens)
         
+        var tempInput = input
+        
+        for (i, layer) in layers.enumerated() {
+            tempInput = layer.forward(tempInput)
+            
+            if i < layers.count - 1 {
+                //relu, if positive it stays positive, if negative make positive
+                tempInput = relu(tempInput)
+            }
+        }
+        
+        return softmax(tempInput)
+    }
+    
+    //MARK: Combine this with other
+    func relu(_ vec: Vector) -> Vector {
+        return vec.map { max(0, $0) }
+    }
+    
+    //MARK: Vector -> probabilty
+    
+    //using e (exp) so that bigger values become much bigger when comparing whole array and smaller become much smaller
+    func softmax(_ vec: Vector) -> Vector {
+        let maxVal = vec.max() ?? 0
+        let exps = vec.map { exp($0 - maxVal) }
+        let sum = exps.reduce(0, +)
+        return exps.map { $0 / sum }
     }
 }
 
@@ -36,6 +87,8 @@ struct LinearLayer {
         
         return [] //todo imp.
     }
+    
+    //init with input / output len / size?
 }
 
 //Pass through network foward
