@@ -17,7 +17,7 @@ class SmallLanguageModel {
     
     //Example of weights would be numbers here
     
-    //This is currently a Markov chain style predictor (super simple
+    //This is currently a Markov chain style predictor (super simple)
     var slmDict: [String: [String: Int]] = [:]
     
     //Train model with word frequencies + connections

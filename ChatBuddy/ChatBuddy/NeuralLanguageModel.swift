@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-//MARK: Newer & updated, more like a real LLM if Swiftully possible
+//MARK: Newer & updated, more like a real LLM if Swiftfully possible
 @Observable
 class NeuralLanguageModel {
     typealias Vector = [Float] //Vectors have direction and magnitude in a 3D space
@@ -19,7 +19,6 @@ class NeuralLanguageModel {
     
     //tokens (bits of words) that are related are closer in the vector space (like, "hiking", "lake" and "mountains" may be near each other but "computer" is somewhere else, off with "keyboard")
     
-    //Was named "Sequence" but that exists in Swift so change
     typealias Matrix = [[Float]]
     
     var layers : [LinearLayer] = []

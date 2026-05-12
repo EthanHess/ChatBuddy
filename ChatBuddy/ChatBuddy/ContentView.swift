@@ -20,29 +20,29 @@ struct ContentView: View {
                 Spacer()
                 //SV -> LVS more versatile than List in some cases, especially for custom layouts
                 //NOTE: lazy lazily loads views but not necessarily data
-                ScrollView {
-                    LazyVStack {
-                        ForEach(messageController.messages) { message in
-                            Spacer()
-                            MessageBubble(authorUID: message.authourUID, messageBody: message.messageBody).frame(width: geo.size.width * 0.8, height: 100)
-                            
-                            //MARK: Messages will appear when added but if we ever reload the entire chat may want to paginate (on view appear)
-                            
-                            Spacer()
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        LazyVStack {
+                            ForEach(messageController.messages) { message in
+                                Spacer()
+                                MessageBubble(authorUID: message.authourUID, messageBody: message.messageBody).frame(width: geo.size.width * 0.8, height: 100)
+                                
+                                //MARK: Messages will appear when added but if we ever reload the entire chat may want to paginate (on view appear)
+                                
+                                Spacer()
+                            }
+                        }
+                    }.onChange(of: messageController.messages.count) { oldValue, newValue in
+                        guard let last = messageController.messages.indices.last else { return }
+                        withAnimation {
+                            //Needs to scroll a bit lower
+                            proxy.scrollTo(last, anchor: .bottom)
                         }
                     }
                 }
                 Spacer()
-                if messageController.isSending == true { AnimatingUploadLine().frame(height: 25) }
-                HStack {
-                    //TODO make this look nicer
-                    TextField("Talk to me!", text: $curText)
-                    Button("Send") {
-                        messageController.addMessage(curText, authorUID: 0)
-                    }
-                }.padding().edgesIgnoringSafeArea(.all).background(
-                    Color.gray
-                ).cornerRadius(10)
+                if messageController.isSending { AnimatingUploadLine().frame(height: 25) }
+                TextFieldContainer(curText: $curText, messageController: messageController)
                 Spacer()
             }
             .padding()
