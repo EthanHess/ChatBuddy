@@ -95,6 +95,8 @@ struct LinearLayer {
 //Rectified Linear Unit = ReLU
 //Will convert a negative number to zero or positive number to itself
 struct FeedTraverser {
+    
+    //Should be array (after test)
     var layerOne: LinearLayer
     var layerTwo: LinearLayer
 

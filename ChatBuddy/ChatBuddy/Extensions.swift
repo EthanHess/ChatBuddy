@@ -10,6 +10,8 @@ import SwiftUI
 @available(iOS 15.0, *)
 extension View {
     //MARK: Backgrounds / layers
+    
+    //MARK: Can DRY this (pass neon color parameter to one)
     var blueNeon: some View {
         self.background(
             RoundedRectangle(cornerRadius: 10)

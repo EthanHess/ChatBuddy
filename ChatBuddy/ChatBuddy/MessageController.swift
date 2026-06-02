@@ -41,7 +41,8 @@ class MessageController  {
     //MARK: Put slm top level
     private func slmTest(_ input: String) -> String  {
         slm.trainModel(input: input)
-        //assume it's a sentence with spaces
+        
+        //assume it's a sentence with spaces (add guard to check eventually)
         guard let firstWord = input
             .split(whereSeparator: \.isWhitespace)
             .first.map(String.init) else { return "" }

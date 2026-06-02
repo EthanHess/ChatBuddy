@@ -14,7 +14,7 @@ struct AnimatingUploadLine : View {
 
     var body: some View {
         LinearGradient(
-            gradient: Gradient(colors: [.white, .blue, .cyan]),
+            gradient: Gradient(colors: [.white.opacity(0.5), .blue.opacity(0.5), .cyan.opacity(0.5)]),
             startPoint: .topLeading,
             endPoint: UnitPoint(x: 1 - progress, y: 1 - progress)
         )
