@@ -26,7 +26,14 @@ class NeuralLanguageModel {
     
     init() {
         //properties already initialized as empty array but may be time we'd want to pass them in here on init
+        //MARK: Something like below example (try?)
     }
+    
+//    init(layerSizes: [Int]) {
+//        self.layers = zip(layerSizes, layerSizes.dropFirst()).map { inputSize, outputSize in
+//            LinearLayer(inputSize: inputSize, outputSize: outputSize)
+//        }
+//    }
     
     func embed(input: [String]) -> Matrix {
         return input.map { token in
@@ -34,8 +41,21 @@ class NeuralLanguageModel {
         }
     }
     
+    //MARK: Discard after test
+//    func combineEmbeddings(_ vectors: Matrix) -> Vector {
+//        return vectors.flatMap { $0 }
+//    }
+    
+    //MARK: TODO test + replace with this (the above should not be flat)
+    
     func combineEmbeddings(_ vectors: Matrix) -> Vector {
-        return vectors.flatMap { $0 }
+        guard !vectors.isEmpty else { return [] }
+        let size = vectors[0].count
+        var result = [Float](repeating: 0, count: size)
+        for vec in vectors {
+            for i in 0..<size { result[i] += vec[i] }
+        }
+        return result.map { $0 / Float(vectors.count) }  //Returns same number no matter how many tokens are passed in, unlike flatMap
     }
     
     func forward(_ tokens: [String]) -> Vector {
@@ -84,10 +104,22 @@ struct LinearLayer {
     func forward(_ x: [Float]) -> [Float] {
         //think of this as weights[x] x bias -> output
         
-        return [] //todo imp.
+        return weights.indices.map { i in
+            //zip = Creates a sequence of pairs built out of two underlying sequences (like two arrays in this case)
+            let dot = zip(weights[i], x).reduce(0) { $0 + $1.0 * $1.1 }
+            return dot + bias[i] //add to bias at index
+        }
     }
     
     //init with input / output len / size?
+    init(inputSize: Int, outputSize: Int) {
+        let scale = sqrt(2.0 / Float(inputSize))
+        
+        self.weights = (0..<outputSize).map { _ in
+            (0..<inputSize).map { _ in Float.random(in: -scale...scale) } //init weights with random values
+        }
+        self.bias = [Float](repeating: 0, count: outputSize) //repeating fills array with 0 (or whatever val)
+    }
 }
 
 //Pass through network foward
