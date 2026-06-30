@@ -31,7 +31,8 @@ class MessageController  {
         //async = generally weakify
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
             guard let self = self else { return }
-            let res = slmTest(body)
+            //let res = slmTest(body)
+            let res = "OMG Hey what's up n00b I'm a chatbot"
             let resMessage = Message(id: messages.count, messageBody: res, authourUID: 1)
             messages.append(resMessage)
             isSending = false

@@ -13,6 +13,15 @@ class NeuralLanguageModel {
     typealias Vector = [Float] //Vectors have direction and magnitude in a 3D space
     var embeddings: [String: Vector] = [:] //tokens mapped -> vector
     
+    //var traverser: FeedTraverser
+    
+    //MARK: Try this with FT
+    
+//    func forward(_ tokens: [String]) -> Vector {
+//        let input = combineEmbeddings(embed(input: tokens))
+//        return traverser.forward(input)
+//    }
+    
     var embeddingSize: Int {
         return embeddings.values.first?.count ?? 0
     }
@@ -58,6 +67,7 @@ class NeuralLanguageModel {
         return result.map { $0 / Float(vectors.count) }  //Returns same number no matter how many tokens are passed in, unlike flatMap
     }
     
+    //MARK: Replaces the need for FeedTraverser
     func forward(_ tokens: [String]) -> Vector {
         let embeddedTokens = embed(input: tokens)
         let input = combineEmbeddings(embeddedTokens)
@@ -100,7 +110,7 @@ struct LinearLayer {
     var weights: [[Float]]  //output X input
     var bias: [Float]      // just output, kind of a helper
 
-    //MARK: Weights computation
+    //MARK: Weights computation (handles this layer)
     func forward(_ x: [Float]) -> [Float] {
         //think of this as weights[x] x bias -> output
         
@@ -122,27 +132,33 @@ struct LinearLayer {
     }
 }
 
-//Pass through network foward
 
-//Rectified Linear Unit = ReLU
-//Will convert a negative number to zero or positive number to itself
+//MARK: Handling this already in main NLM class but can maybe use this to make neater / wrap complex logic
+
+//Pass through network foward
 struct FeedTraverser {
     
-    //Should be array (after test)
-    var layerOne: LinearLayer
-    var layerTwo: LinearLayer
+    //MARK: Connects previous and current layers of network, there are input and output layers as well as hidden ones in the middle
+    
+    var layers: [LinearLayer]
 
-    func forward(_ x: [Float]) -> [Float] {
-        let h = relu(layerOne.forward(x))
-        return layerTwo.forward(h)
+    init(layerSizes: [Int]) {
+        //zip merges two sequences (like array for example) into new sequence of tuples
+        self.layers = zip(layerSizes, layerSizes.dropFirst()).map { inputSize, outputSize in
+            LinearLayer(inputSize: inputSize, outputSize: outputSize)
+        }
     }
     
-    //2D
-    func relu(_ x: Float) -> Float {
-        return max(0, x)
+    //MARK: propogation to generate a prediction (all layers)
+    func forward(_ x: [Float]) -> [Float]{
+        return layers.indices.reduce(x) { input, i in
+            let output = layers[i].forward(input)
+            return i < layers.count - 1 ? relu(output) : output  // no ReLU on last layer
+        }
     }
 
-    //3D
+    //Rectified Linear Unit = ReLU
+    //Will convert a negative number to zero or positive number to itself
     func relu(_ vec: [Float]) -> [Float] {
         return vec.map { max(0, $0) }
     }

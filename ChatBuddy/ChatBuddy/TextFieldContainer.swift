@@ -17,7 +17,8 @@ struct TextFieldContainer : View {
             //TODO make this look nicer
             TextField("Talk to me!", text: $curText)
             Button("Send") {
-                messageController.addMessage(curText, authorUID: 0)
+                messageController.addMessage(curText, authorUID: 0) //add completion / error handling
+                curText = ""
             }.padding().blueNeon
         }.padding().edgesIgnoringSafeArea(.all).cornerRadius(10).blueNeon
     }
