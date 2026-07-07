@@ -14,18 +14,30 @@ struct ChatBuddyApp: App {
     
     //Also won't be created multiple times 
     
+    //MARK: layers = processing steps in an llm
+    
+    //MARK: 6 = input size (only with flat map, aside from that it would be 3), 4 = hidden layer -> 4 neurons (numbers in this case) 6 down (embedding size), 3 = output size, in this case the "cat" token 
+    
+    //MARK: TODO test with [3, 4, 3]
     @State private var messageController : MessageController
-    @State private var slm = SmallLanguageModel()
+    @State private var nlm = NeuralLanguageModel(layerSizes: [6, 4, 3])
+    
+    //  @State private var slm = SmallLanguageModel()
     
     init() {
-        let languageModel = SmallLanguageModel()
-        _slm = State(initialValue: languageModel)
-        _messageController = State(initialValue: MessageController(slm: languageModel))
+      //  let languageModel = SmallLanguageModel()
+    //    _slm = State(initialValue: languageModel)
+        //MessageController(slm: languageModel)
+        
+        let languageModel = NeuralLanguageModel(layerSizes: [6, 4, 3])
+        _nlm = State(initialValue: languageModel)
+
+        _messageController = State(initialValue: MessageController(nlm: languageModel))
     }
     
     var body: some Scene {
         WindowGroup {
-            ContentView().environment(slm)
+            ContentView().environment(nlm)
                 .environment(messageController)
         }
     }
