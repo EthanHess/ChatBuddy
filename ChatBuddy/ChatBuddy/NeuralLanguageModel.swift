@@ -79,74 +79,30 @@ class NeuralLanguageModel {
         let sum = exps.reduce(0, +)
         return exps.map { $0 / sum }
     }
-}
-
-//Weights = strength in which each input affects output
-//Bias related to weights (assists them)
-
-//MARK: Put weights and functionality here
-struct LinearLayer {
-    var weights: [[Float]]  //output X input
-    var bias: [Float]      // just output, kind of a helper
-
-    //MARK: Weights computation (handles this layer)
-    func forward(_ x: [Float]) -> [Float] {
-        //think of this as weights[x] x bias -> output
+    
+    
+    //MARK: Training (the cool part!)
+    func train(input: [String], targetIndex: Int, learningRate: Float = 0.01) {
+        //Forwarding, like to different layers etc. (like from input embeddings through transformer layers)
+        let output = forward(input)
         
-        return weights.indices.map { i in
-            //zip = Creates a sequence of pairs built out of two underlying sequences (like two arrays in this case)
-            let dot = zip(weights[i], x).reduce(0) { $0 + $1.0 * $1.1 }
-            return dot + bias[i] //add to bias at index
-        }
-    }
-    
-    //init with input / output len / size?
-    init(inputSize: Int, outputSize: Int) {
-        let scale = sqrt(2.0 / Float(inputSize))
+        //MARK: gradients reduce prediction errors (can be both positive and negative)
+        var outputGradient = output
+        outputGradient[targetIndex] -= 1
         
-        self.weights = (0..<outputSize).map { _ in
-            (0..<inputSize).map { _ in Float.random(in: -scale...scale) } //init weights with random values
+        var gradient = outputGradient
+        for i in stride(from: layers.count - 1, through: 0, by: -1) {
+            gradient = layers[i].backward(gradient, learningRate: learningRate)
         }
-        self.bias = [Float](repeating: 0, count: outputSize) //repeating fills array with 0 (or whatever val)
     }
 }
 
 
 
 
-//MARK: Not using atm
 
 
-//MARK: Handling this already in main NLM class but can maybe use this to make neater / wrap complex logic
 
-//Pass through network foward
-struct FeedTraverser {
-    
-    //MARK: Connects previous and current layers of network, there are input and output layers as well as hidden ones in the middle
-    
-    var layers: [LinearLayer]
-
-    init(layerSizes: [Int]) {
-        //zip merges two sequences (like array for example) into new sequence of tuples
-        self.layers = zip(layerSizes, layerSizes.dropFirst()).map { inputSize, outputSize in
-            LinearLayer(inputSize: inputSize, outputSize: outputSize)
-        }
-    }
-    
-    //MARK: propogation to generate a prediction (all layers)
-    func forward(_ x: [Float]) -> [Float]{
-        return layers.indices.reduce(x) { input, i in
-            let output = layers[i].forward(input)
-            return i < layers.count - 1 ? relu(output) : output  // no ReLU on last layer
-        }
-    }
-
-    //Rectified Linear Unit = ReLU
-    //Will convert a negative number to zero or positive number to itself
-    func relu(_ vec: [Float]) -> [Float] {
-        return vec.map { max(0, $0) }
-    }
-}
 
 
 
