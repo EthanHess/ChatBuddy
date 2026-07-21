@@ -29,7 +29,7 @@ class NeuralLanguageModel {
             LinearLayer(inputSize: inputSize, outputSize: outputSize)
         }
     }
-    
+
     func embed(input: [String]) -> Matrix {
         return input.map { token in
             return embeddings[token] != nil ? embeddings[token]! : [Float](repeating: 0, count: embeddingSize)

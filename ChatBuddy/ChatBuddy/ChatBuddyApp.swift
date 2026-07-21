@@ -20,7 +20,7 @@ struct ChatBuddyApp: App {
     
     //MARK: TODO test with [3, 4, 3]
     @State private var messageController : MessageController
-    @State private var nlm = NeuralLanguageModel(layerSizes: [6, 4, 3])
+    @State private var nlm = NeuralLanguageModel(layerSizes: [3, 4, 5])
     
     //  @State private var slm = SmallLanguageModel()
     
@@ -29,7 +29,7 @@ struct ChatBuddyApp: App {
     //    _slm = State(initialValue: languageModel)
         //MessageController(slm: languageModel)
         
-        let languageModel = NeuralLanguageModel(layerSizes: [6, 4, 3])
+        let languageModel = NeuralLanguageModel(layerSizes: [3, 4, 5])
         _nlm = State(initialValue: languageModel)
 
         _messageController = State(initialValue: MessageController(nlm: languageModel))

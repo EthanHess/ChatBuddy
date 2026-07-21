@@ -32,8 +32,9 @@ class MessageController  {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
             guard let self = self else { return }
             //let res = slmTest(body)
-            let res = "OMG Hey what's up n00b I'm a chatbot"
-        //    let res = nlmTest(body)
+    //        let res = "OMG Hey what's up n00b I'm a chatbot"
+           // let res = nlmTest(body)
+            let res = generateSentence(start: body)
             let resMessage = Message(id: messages.count, messageBody: res, authourUID: 1)
             messages.append(resMessage)
             isSending = false
@@ -60,14 +61,47 @@ class MessageController  {
         self.nlm = nlm
         
         setUpTestData()
+        trainModel()
+    }
+    
+    //MARK: May need more iterations for more accurate response
+    
+    private func trainModel() {
+        let sequence = ["cat", "sat", "on", "the", "mat"]
+            
+        // train on consecutive pairs
+        for i in 0..<sequence.count - 1 {
+            let input = sequence[i]
+            let targetIndex = nlm.tokens.firstIndex(of: sequence[i + 1]) ?? 0
+                
+            for _ in 0..<1000 {
+                nlm.train(input: [input], targetIndex: targetIndex, learningRate: 0.01)
+            }
+        }
+    }
+    
+    private func generateSentence(start: String, maxLength: Int = 5) -> String {
+        var result = [start]
+        var currentToken = start
+        
+        for _ in 0..<maxLength {
+            let nextToken = nlmTest(currentToken)
+            if nextToken == currentToken { break } //need to stop at some point or this'll go forever
+            result.append(nextToken)
+            currentToken = nextToken
+        }
+        
+        return result.joined(separator: " ")
     }
     
     private func setUpTestData() {
-        nlm.tokens = ["cat", "dog", "car"]
+        nlm.tokens = ["cat", "sat", "on", "the", "mat"]
         nlm.embeddings = [
-            "cat": [0.2, 0.8, 0.1],
-            "dog": [0.6, 0.3, 0.9],
-            "car": [0.4, 0.5, 0.2]
+            "cat": [0.8, 0.2, 0.1],
+            "sat": [0.3, 0.9, 0.2],
+            "on":  [0.1, 0.1, 0.5],
+            "the": [0.1, 0.1, 0.1],
+            "mat": [0.7, 0.3, 0.4]
         ]
     }
     
