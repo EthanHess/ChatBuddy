@@ -76,3 +76,36 @@
 //    }
 //}
 
+
+
+
+//MARK: SLM
+
+//MARK: Put slm top level
+//    private func slmTest(_ input: String) -> String  {
+//        slm.trainModel(input: input)
+//
+//        //assume it's a sentence with spaces (add guard to check eventually)
+//        guard let firstWord = input
+//            .split(whereSeparator: \.isWhitespace)
+//            .first.map(String.init) else { return "" }
+//        let rep = slm.generateResponse(start: firstWord)
+//        return rep
+//    }
+
+
+
+//    let slm : SmallLanguageModel
+//
+//    //DI ftw
+//    init(slm: SmallLanguageModel) {
+//        self.slm = slm
+//    }
+    
+
+
+//  @State private var slm = SmallLanguageModel()
+
+//  let languageModel = SmallLanguageModel()
+//    _slm = State(initialValue: languageModel)
+  //MessageController(slm: languageModel)

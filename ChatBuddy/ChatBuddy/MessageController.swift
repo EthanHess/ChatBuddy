@@ -12,13 +12,6 @@ import Observation
 @Observable
 class MessageController  {
     
-//    let slm : SmallLanguageModel
-//    
-//    //DI ftw
-//    init(slm: SmallLanguageModel) {
-//        self.slm = slm
-//    }
-    
     var messages : [Message] = []
     var isSending = false
     
@@ -41,19 +34,6 @@ class MessageController  {
         }
     }
     
-    //MARK: Put slm top level
-//    private func slmTest(_ input: String) -> String  {
-//        slm.trainModel(input: input)
-//        
-//        //assume it's a sentence with spaces (add guard to check eventually)
-//        guard let firstWord = input
-//            .split(whereSeparator: \.isWhitespace)
-//            .first.map(String.init) else { return "" }
-//        let rep = slm.generateResponse(start: firstWord)
-//        return rep
-//    }
-    
-    
     //MARK: New model test
     let nlm : NeuralLanguageModel
     
@@ -68,14 +48,12 @@ class MessageController  {
     
     private func trainModel() {
         let sequence = ["cat", "sat", "on", "the", "mat"]
-            
-        // train on consecutive pairs
-        for i in 0..<sequence.count - 1 {
-            let input = sequence[i]
-            let targetIndex = nlm.tokens.firstIndex(of: sequence[i + 1]) ?? 0
-                
-            for _ in 0..<1000 {
-                nlm.train(input: [input], targetIndex: targetIndex, learningRate: 0.01)
+        let pairs = zip(sequence, sequence.dropFirst()).map { ($0, $1) }
+        
+        for _ in 0..<50000 {
+            for (input, target) in pairs {
+                let targetIndex = nlm.tokens.firstIndex(of: target) ?? 0
+                nlm.train(input: [input], targetIndex: targetIndex, learningRate: 0.001)
             }
         }
     }
@@ -85,23 +63,29 @@ class MessageController  {
         var currentToken = start
         
         for _ in 0..<maxLength {
+            //MARK: Debugging, remove when finished
+            let probs = nlm.forward([currentToken])
+            print("\(currentToken) probs: \(zip(nlm.tokens, probs).map { "\($0.0): \(String(format: "%.3f", $0.1))" })")
+            
             let nextToken = nlmTest(currentToken)
+            if nextToken == "<end>" { break }
             if nextToken == currentToken { break } //need to stop at some point or this'll go forever
             result.append(nextToken)
             currentToken = nextToken
         }
-        
+       
         return result.joined(separator: " ")
     }
     
     private func setUpTestData() {
-        nlm.tokens = ["cat", "sat", "on", "the", "mat"]
+        nlm.tokens = ["cat", "sat", "on", "the", "mat", "<end>"]
         nlm.embeddings = [
-            "cat": [0.8, 0.2, 0.1],
-            "sat": [0.3, 0.9, 0.2],
-            "on":  [0.1, 0.1, 0.5],
-            "the": [0.1, 0.1, 0.1],
-            "mat": [0.7, 0.3, 0.4]
+            "cat":   [1.0, 0.0, 0.0],
+            "sat":   [0.0, 1.0, 0.0],
+            "on":    [0.0, 0.0, 1.0],
+            "the":   [0.5, 0.5, 0.0],
+            "mat":   [0.0, 0.5, 0.5],
+            "<end>": [0.0, 0.0, 0.0]
         ]
     }
     

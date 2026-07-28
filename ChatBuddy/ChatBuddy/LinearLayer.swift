@@ -39,14 +39,14 @@ struct LinearLayer {
     
     
     //learning rate = weight adjustments
-    mutating func backward(_ gradient: [Float], learningRate: Float) -> [Float] {
+    mutating func backward(_ gradient: [Float], input: [Float], learningRate: Float) -> [Float] {
         //Prev. layer
         var inputGradient = [Float](repeating: 0, count: weights[0].count)
         
         for i in weights.indices {
             for j in weights[i].indices {
                 //neuron row (weights) (reducing error is what this is doing)
-                weights[i][j] -= learningRate * gradient[i] * weights[i][j]
+                weights[i][j] -= learningRate * gradient[i] * input[j]
             }
             bias[i] -= learningRate * gradient[i]
                     
