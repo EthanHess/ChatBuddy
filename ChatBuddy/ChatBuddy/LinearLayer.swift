@@ -12,7 +12,9 @@ import SwiftUI
 //Bias related to weights (assists them)
 
 //MARK: Put weights and functionality here
-struct LinearLayer {
+
+//MARK: Codable to save training data (weights etc.)
+struct LinearLayer : Codable  {
     var weights: [[Float]]  //output X input
     var bias: [Float]      // just output, kind of a helper
 

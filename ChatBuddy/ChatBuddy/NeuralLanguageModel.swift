@@ -80,47 +80,58 @@ class NeuralLanguageModel {
         return exps.map { $0 / sum }
     }
     
-    
-//    func train(input: [String], targetIndex: Int, learningRate: Float = 0.01) {
-//        //Forwarding, like to different layers etc. (like from input embeddings through transformer layers)
-//        let output = forward(input)
-//        
-//        //MARK: gradients reduce prediction errors (can be both positive and negative)
-//        var outputGradient = output
-//        outputGradient[targetIndex] -= 1
-//        
-//        var gradient = outputGradient
-//        for i in stride(from: layers.count - 1, through: 0, by: -1) {
-//            gradient = layers[i].backward(gradient, learningRate: learningRate)
-//        }
-//    }
-    
-    //MARK: Training (the cool part!)
+    //MARK: Training (the cool part!) (fix ReLU issue of not including numbers clipped to 0)
+    //Basically adding ReLU derivitave to backpropogation (the model correcting itself & learning from its mistakes)
     func train(input: [String], targetIndex: Int, learningRate: Float = 0.01) {
-        // forward pass, storing intermediate inputs
         let embedded = combineEmbeddings(embed(input: input))
-        var layerInputs = [embedded]  // store each layer's input
+        var layerInputs = [embedded]
         
         var current = embedded
-        for layer in layers {
+        for (i, layer) in layers.enumerated() {
             current = layer.forward(current)
+            if i < layers.count - 1 {
+                current = relu(current)  // match forward's ReLU
+            }
             layerInputs.append(current)
         }
         
         let output = softmax(current)
         
-        // gradient of loss
         var gradient = output
         gradient[targetIndex] -= 1
         
-        //expensive, comment this out when not needed
-        
-        //print("Input: \(input) | Output probs: \(output) | Target: \(targetIndex)")
-        
-        // backprop in reverse, passing the correct input for each layer
         for i in stride(from: layers.count - 1, through: 0, by: -1) {
             gradient = layers[i].backward(gradient, input: layerInputs[i], learningRate: learningRate)
+            
+            // apply ReLU derivative for hidden layers
+            if i > 0 {
+                gradient = zip(gradient, layerInputs[i]).map { g, x in x > 0 ? g : 0 }
+            }
         }
+    }
+    
+    //MARK: Saving / loading training data
+    func saveWeights() {
+        let encoder = JSONEncoder()
+        if let encoded = try? encoder.encode(layers) {
+            UserDefaults.standard.set(encoded, forKey: "nlm_weights")
+            print("Weights saved!")
+        }
+    }
+
+    func loadWeights() -> Bool {
+        guard let data = UserDefaults.standard.data(forKey: "nlm_weights"),
+              let decoded = try? JSONDecoder().decode([LinearLayer].self, from: data) else {
+            return false
+        }
+        layers = decoded
+        print("Weights loaded!")
+        return true
+    }
+    
+    //MARK: TODO add button to clear, training data is bad sometimes
+    func resetModel() {
+        UserDefaults.standard.removeObject(forKey: "nlm_weights")
     }
 }
 

@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-//TODO make this look nicer
+//TODO make this look nicer + add emojis!
 struct MessageBubble: View {
     var authorUID : Int
     var messageBody : String

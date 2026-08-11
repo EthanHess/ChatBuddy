@@ -62,6 +62,23 @@ extension View {
                 .stroke(Color(uiColor: .lightGreen.withAlphaComponent(0.25)), lineWidth: 1)
         )
     }
+    
+    var redNeon: some View {
+        self.background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(
+                    LinearGradient(
+                        colors: [Color.red.opacity(0.2), .black],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(Color(uiColor: .red.withAlphaComponent(0.25)), lineWidth: 1)
+        )
+    }
 
     func neon(_ style: NeonStyle) -> some View {
         switch style {
@@ -69,6 +86,8 @@ extension View {
             AnyView(self.orangeNeon)
         case .green:
             AnyView(self.greenNeon)
+        case .red:
+            AnyView(self.redNeon)
         }
     }
 }
@@ -76,6 +95,7 @@ extension View {
 enum NeonStyle {
     case orange
     case green
+    case red
 }
 
 

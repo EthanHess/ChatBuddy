@@ -15,8 +15,16 @@ struct ContentView: View {
     @State private var curText : String = ""
     
     var body: some View {
-        GeometryReader { geo in
+        GeometryReader { geo in //We can remove this and just add frame(.infinity) since SwiftUI sizes well 
             VStack {
+                HStack {
+                    Button("Clear model") {
+                        messageController.clearData()
+                    }.padding().redNeon.foregroundStyle(.red)
+                    Button("Print") {
+                        messageController.printTest()
+                    }.padding().redNeon.foregroundStyle(.red)
+                }.padding()
                 Spacer()
                 //SV -> LVS more versatile than List in some cases, especially for custom layouts
                 //NOTE: lazy lazily loads views but not necessarily data

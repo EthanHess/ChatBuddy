@@ -109,3 +109,51 @@
 //  let languageModel = SmallLanguageModel()
 //    _slm = State(initialValue: languageModel)
   //MessageController(slm: languageModel)
+
+
+
+
+
+//    func train(input: [String], targetIndex: Int, learningRate: Float = 0.01) {
+//        //Forwarding, like to different layers etc. (like from input embeddings through transformer layers)
+//        let output = forward(input)
+//
+//        //MARK: gradients reduce prediction errors (can be both positive and negative)
+//        var outputGradient = output
+//        outputGradient[targetIndex] -= 1
+//
+//        var gradient = outputGradient
+//        for i in stride(from: layers.count - 1, through: 0, by: -1) {
+//            gradient = layers[i].backward(gradient, learningRate: learningRate)
+//        }
+//    }
+
+
+
+//MARK: Training (the cool part!)
+//    func train(input: [String], targetIndex: Int, learningRate: Float = 0.01) {
+//        // forward pass, storing intermediate inputs
+//        let embedded = combineEmbeddings(embed(input: input))
+//        var layerInputs = [embedded]  // store each layer's input
+//
+//        var current = embedded
+//        for layer in layers {
+//            current = layer.forward(current)
+//            layerInputs.append(current)
+//        }
+//
+//        let output = softmax(current)
+//
+//        // gradient of loss
+//        var gradient = output
+//        gradient[targetIndex] -= 1
+//
+//        //expensive, comment this out when not needed
+//
+//        //print("Input: \(input) | Output probs: \(output) | Target: \(targetIndex)")
+//
+//        // backprop in reverse, passing the correct input for each layer
+//        for i in stride(from: layers.count - 1, through: 0, by: -1) {
+//            gradient = layers[i].backward(gradient, input: layerInputs[i], learningRate: learningRate)
+//        }
+//    }

@@ -47,29 +47,45 @@ class MessageController  {
     //MARK: May need more iterations for more accurate response
     
     private func trainModel() {
+        if nlm.loadWeights() { return }
+        
         let sequence = ["cat", "sat", "on", "the", "mat"]
         let pairs = zip(sequence, sequence.dropFirst()).map { ($0, $1) }
         
         for _ in 0..<50000 {
-            for (input, target) in pairs {
+            //for (input, target) in pairs { <- can also not shuffle
+            for (input, target) in pairs.shuffled() {  // shuffle each epoch (ref. point) so that model knows they can be in different orders
                 let targetIndex = nlm.tokens.firstIndex(of: target) ?? 0
                 nlm.train(input: [input], targetIndex: targetIndex, learningRate: 0.001)
             }
         }
+        
+        nlm.saveWeights() //prevents calling above every app launch, especially when we add thousands of words
     }
     
     private func generateSentence(start: String, maxLength: Int = 5) -> String {
         var result = [start]
         var currentToken = start
         
+//        for _ in 0..<maxLength {
+//            //MARK: Debugging, remove when finished
+//            let probs = nlm.forward([currentToken])
+//            print("\(currentToken) probs: \(zip(nlm.tokens, probs).map { "\($0.0): \(String(format: "%.3f", $0.1))" })")
+//            
+//            let nextToken = nlmTest(currentToken)
+//            if nextToken == "<end>" { break }
+//            if nextToken == currentToken { break } //need to stop at some point or this'll go forever
+//            result.append(nextToken)
+//            currentToken = nextToken
+//        }
+        
+        var visited = Set<String>()
+        
         for _ in 0..<maxLength {
-            //MARK: Debugging, remove when finished
-            let probs = nlm.forward([currentToken])
-            print("\(currentToken) probs: \(zip(nlm.tokens, probs).map { "\($0.0): \(String(format: "%.3f", $0.1))" })")
-            
             let nextToken = nlmTest(currentToken)
             if nextToken == "<end>" { break }
-            if nextToken == currentToken { break } //need to stop at some point or this'll go forever
+            if visited.contains(nextToken) { break }  // catches cycles
+            visited.insert(nextToken)
             result.append(nextToken)
             currentToken = nextToken
         }
@@ -98,6 +114,16 @@ class MessageController  {
         //highest propbability (token)
         guard let maxIndex = probabilities.indices.max(by: { probabilities[$0] < probabilities[$1] }) else { return "" }
         return nlm.tokens[maxIndex]
+    }
+    
+    func clearData() {
+        nlm.resetModel()
+    }
+    
+    func printTest() {
+        //sat: 0.997 <- something like this means model is very confident cat -> sat makes sense
+        let probs = nlm.forward(["cat"])
+        print("cat probs: \(zip(nlm.tokens, probs).map { "\($0.0): \(String(format: "%.3f", $0.1))" })")
     }
 }
 
