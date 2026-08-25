@@ -157,3 +157,55 @@
 //            gradient = layers[i].backward(gradient, input: layerInputs[i], learningRate: learningRate)
 //        }
 //    }
+
+
+
+//MARK: Pre context
+
+//private func generateSentence(start: String, maxLength: Int = 5) -> String {
+//    var result = [start]
+//    var currentToken = start
+//    
+////        for _ in 0..<maxLength {
+////            //MARK: Debugging, remove when finished
+////            let probs = nlm.forward([currentToken])
+////            print("\(currentToken) probs: \(zip(nlm.tokens, probs).map { "\($0.0): \(String(format: "%.3f", $0.1))" })")
+////
+////            let nextToken = nlmTest(currentToken)
+////            if nextToken == "<end>" { break }
+////            if nextToken == currentToken { break } //need to stop at some point or this'll go forever
+////            result.append(nextToken)
+////            currentToken = nextToken
+////        }
+//    
+//    var visited = Set<String>()
+//    
+//    for _ in 0..<maxLength {
+//        let nextToken = nlmTest(currentToken)
+//        if nextToken == "<end>" { break }
+//        if visited.contains(nextToken) { break }  // catches cycles
+//        visited.insert(nextToken)
+//        result.append(nextToken)
+//        currentToken = nextToken
+//    }
+//   
+//    return result.joined(separator: " ")
+//}
+
+
+
+//private func nlmTest(_ input: String) -> String  {
+//    //[String]
+//    let tokens = input.split(whereSeparator: \.isWhitespace).map(String.init)
+//    //returning Vector (which is [Float])
+//    let probabilities = nlm.forward(tokens)
+//    
+//    //highest propbability (token)
+//    guard let maxIndex = probabilities.indices.max(by: { probabilities[$0] < probabilities[$1] }) else { return "" }
+//    return nlm.tokens[maxIndex]
+//}
+
+
+//let res = slmTest(body)
+//        let res = "OMG Hey what's up n00b I'm a chatbot"
+// let res = nlmTest(body)

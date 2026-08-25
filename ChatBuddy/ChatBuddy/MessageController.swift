@@ -21,13 +21,10 @@ class MessageController  {
         let message = Message(id: messages.count, messageBody: body, authourUID: authorUID)
         messages.append(message)
     
-        //async = generally weakify
+        //async = generally weakify (for ref. types)
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
             guard let self = self else { return }
-            //let res = slmTest(body)
-    //        let res = "OMG Hey what's up n00b I'm a chatbot"
-           // let res = nlmTest(body)
-            let res = generateSentence(start: body)
+            let res = generateSentence(start: body.lowercased())
             let resMessage = Message(id: messages.count, messageBody: res, authourUID: 1)
             messages.append(resMessage)
             isSending = false
@@ -41,7 +38,14 @@ class MessageController  {
         self.nlm = nlm
         
         setUpTestData()
-        trainModel()
+        
+        //100K iterations for training is a lot and can block the main thread so
+        Task.detached(priority: .userInitiated) { [weak self] in
+            await self?.trainModel()
+        }
+        
+        //sub 50k
+      //  trainModel()
     }
     
     //MARK: May need more iterations for more accurate response
@@ -49,69 +53,68 @@ class MessageController  {
     private func trainModel() {
         if nlm.loadWeights() { return }
         
-        let sequence = ["cat", "sat", "on", "the", "mat"]
-        let pairs = zip(sequence, sequence.dropFirst()).map { ($0, $1) }
+        let sequences = [
+            ["cat", "sat", "on", "the", "mat", "<end>"],
+            ["dog", "ran", "on", "the", "park", "<end>"]
+        ]
         
-        for _ in 0..<50000 {
-            //for (input, target) in pairs { <- can also not shuffle
-            for (input, target) in pairs.shuffled() {  // shuffle each epoch (ref. point) so that model knows they can be in different orders
-                let targetIndex = nlm.tokens.firstIndex(of: target) ?? 0
-                nlm.train(input: [input], targetIndex: targetIndex, learningRate: 0.001)
+        var pairs: [([String], String)] = []
+        for sequence in sequences {
+            for i in 1..<sequence.count {
+                let context = Array(sequence[0..<i])
+                let target = sequence[i]
+                pairs.append((context, target))
             }
         }
         
-        nlm.saveWeights() //prevents calling above every app launch, especially when we add thousands of words
+        for _ in 0..<100000 {
+            for (context, target) in pairs.shuffled() {
+                let targetIndex = nlm.tokens.firstIndex(of: target) ?? 0
+                nlm.train(input: context, targetIndex: targetIndex, learningRate: 0.001)
+            }
+        }
+        
+        nlm.saveWeights()
     }
+    
+    //MARK: Eventually take into account whole context (context window)
     
     private func generateSentence(start: String, maxLength: Int = 5) -> String {
         var result = [start]
-        var currentToken = start
-        
-//        for _ in 0..<maxLength {
-//            //MARK: Debugging, remove when finished
-//            let probs = nlm.forward([currentToken])
-//            print("\(currentToken) probs: \(zip(nlm.tokens, probs).map { "\($0.0): \(String(format: "%.3f", $0.1))" })")
-//            
-//            let nextToken = nlmTest(currentToken)
-//            if nextToken == "<end>" { break }
-//            if nextToken == currentToken { break } //need to stop at some point or this'll go forever
-//            result.append(nextToken)
-//            currentToken = nextToken
-//        }
-        
+        var context = [start]
         var visited = Set<String>()
         
         for _ in 0..<maxLength {
-            let nextToken = nlmTest(currentToken)
+            print("Context: \(context)")
+            let nextToken = nlmTest(context)
+            print("Predicted: \(nextToken)")
             if nextToken == "<end>" { break }
-            if visited.contains(nextToken) { break }  // catches cycles
+            if visited.contains(nextToken) { break }
             visited.insert(nextToken)
             result.append(nextToken)
-            currentToken = nextToken
+            context.append(nextToken)
         }
-       
+        
         return result.joined(separator: " ")
     }
     
     private func setUpTestData() {
-        nlm.tokens = ["cat", "sat", "on", "the", "mat", "<end>"]
+        nlm.tokens = ["cat", "sat", "on", "the", "mat", "dog", "ran", "park", "<end>"]
         nlm.embeddings = [
             "cat":   [1.0, 0.0, 0.0],
             "sat":   [0.0, 1.0, 0.0],
             "on":    [0.0, 0.0, 1.0],
             "the":   [0.5, 0.5, 0.0],
             "mat":   [0.0, 0.5, 0.5],
+            "dog":   [0.9, 0.1, 0.2],
+            "ran":   [0.1, 0.9, 0.1],
+            "park":  [0.2, 0.3, 0.9],
             "<end>": [0.0, 0.0, 0.0]
         ]
     }
     
-    private func nlmTest(_ input: String) -> String  {
-        //[String]
-        let tokens = input.split(whereSeparator: \.isWhitespace).map(String.init)
-        //returning Vector (which is [Float])
-        let probabilities = nlm.forward(tokens)
-        
-        //highest propbability (token)
+    private func nlmTest(_ tokens: [String]) -> String {
+        let probabilities = nlm.forward(tokens)  // forward already supports [String]!
         guard let maxIndex = probabilities.indices.max(by: { probabilities[$0] < probabilities[$1] }) else { return "" }
         return nlm.tokens[maxIndex]
     }
@@ -133,3 +136,5 @@ struct Message : Identifiable {
     var messageBody : String
     var authourUID : Int
 }
+
+
