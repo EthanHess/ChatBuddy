@@ -55,7 +55,7 @@ class MessageController  {
         
         let sequences = [
             ["cat", "sat", "on", "the", "mat", "<end>"],
-            ["dog", "ran", "on", "the", "park", "<end>"]
+            ["dog", "ran", "in", "the", "park", "<end>"]
         ]
         
         var pairs: [([String], String)] = []
@@ -75,19 +75,25 @@ class MessageController  {
         }
         
         nlm.saveWeights()
+        
+        //MARK: Test
+//        let probs = nlm.forward(["dog", "ran", "on"])
+//        print("probs: \(zip(nlm.tokens, probs).map { "\($0.0): \(String(format: "%.3f", $0.1))" })")
     }
     
     //MARK: Eventually take into account whole context (context window)
     
-    private func generateSentence(start: String, maxLength: Int = 5) -> String {
+    //context window will be last n tokens (for now prevents input that's too large for what the model was trained on)
+    private func generateSentence(start: String, maxLength: Int = 5, contextWindow: Int = 4) -> String {
         var result = [start]
         var context = [start]
         var visited = Set<String>()
         
         for _ in 0..<maxLength {
-            print("Context: \(context)")
-            let nextToken = nlmTest(context)
-            print("Predicted: \(nextToken)")
+//            print("Context: \(context)")
+            let windowedContext = Array(context.suffix(contextWindow)) //last 4 for now (testing)
+            let nextToken = nlmTest(windowedContext)
+//            print("Predicted: \(nextToken)")
             if nextToken == "<end>" { break }
             if visited.contains(nextToken) { break }
             visited.insert(nextToken)
@@ -99,7 +105,7 @@ class MessageController  {
     }
     
     private func setUpTestData() {
-        nlm.tokens = ["cat", "sat", "on", "the", "mat", "dog", "ran", "park", "<end>"]
+        nlm.tokens = ["cat", "sat", "on", "the", "mat", "dog", "ran", "park", "in", "<end>"]
         nlm.embeddings = [
             "cat":   [1.0, 0.0, 0.0],
             "sat":   [0.0, 1.0, 0.0],
@@ -109,6 +115,7 @@ class MessageController  {
             "dog":   [0.9, 0.1, 0.2],
             "ran":   [0.1, 0.9, 0.1],
             "park":  [0.2, 0.3, 0.9],
+            "in": [0.3, 0.7, 0.4], 
             "<end>": [0.0, 0.0, 0.0]
         ]
     }
