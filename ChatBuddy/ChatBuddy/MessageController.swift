@@ -33,17 +33,23 @@ class MessageController  {
     
     //MARK: New model test
     let nlm : NeuralLanguageModel
+    var isTraining = false
     
     init(nlm: NeuralLanguageModel) {
         self.nlm = nlm
         
         setUpTestData()
+        isTraining = true
         
         //100K iterations for training is a lot and can block the main thread so
         Task.detached(priority: .userInitiated) { [weak self] in
-            await self?.trainModel()
+            guard let self = self else { return }
+            await self.trainModel()
+            await MainActor.run {
+                self.isTraining = false
+            }
         }
-        
+    
         //sub 50k
       //  trainModel()
     }
@@ -55,7 +61,9 @@ class MessageController  {
         
         let sequences = [
             ["cat", "sat", "on", "the", "mat", "<end>"],
-            ["dog", "ran", "in", "the", "park", "<end>"]
+            ["dog", "ran", "in", "the", "park", "<end>"],
+            ["cat", "ran", "in", "the", "park", "<end>"],
+            ["dog", "sat", "on", "the", "mat", "<end>"]
         ]
         
         var pairs: [([String], String)] = []

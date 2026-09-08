@@ -25,6 +25,9 @@ struct ContentView: View {
                         messageController.printTest()
                     }.padding().redNeon.foregroundStyle(.red)
                 }.padding()
+                if messageController.isTraining {
+                    ProgressView("Training model...")
+                }
                 Spacer()
                 //SV -> LVS more versatile than List in some cases, especially for custom layouts
                 //NOTE: lazy lazily loads views but not necessarily data
