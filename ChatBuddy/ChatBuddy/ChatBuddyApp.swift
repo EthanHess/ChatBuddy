@@ -32,8 +32,10 @@ struct ChatBuddyApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView().environment(nlm)
-                .environment(messageController)
+//            ContentView().environment(nlm)
+//                .environment(messageController)
+            
+            ChatsTable()
         }
     }
 }

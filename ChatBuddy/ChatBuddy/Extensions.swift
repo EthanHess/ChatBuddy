@@ -92,7 +92,7 @@ extension View {
     }
 }
 
-enum NeonStyle {
+enum NeonStyle : CaseIterable { //CaseIterable, can choose random
     case orange
     case green
     case red
