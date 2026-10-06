@@ -17,11 +17,14 @@ struct ChatsTable: View {
                 LazyVStack {
                     ForEach(chatsController.chats) { chat in
                         NavigationLink(destination: ChatView(chat: chat)) {
-                            ChatCell(chat: chat)
+                            ChatCell(chat: chat, onDelete: {
+                                chatsController.deleteChat(chat)
+                            })
                         }
                     }
                 }
             }
+            .padding()
             .navigationTitle("Chats")
             .toolbar {
                 Button("New Chat") {
@@ -32,10 +35,21 @@ struct ChatsTable: View {
     }
 }
 
+//MARK: Only works on list but this could be cool
+
+//    .swipeActions(edge: .trailing) {
+//        Button(role: .destructive) {
+//            chatsController.deleteChat(chat)
+//        } label: {
+//            Label("Delete", systemImage: "trash")
+//        }
+//    }
+
 
 
 struct ChatCell: View {
     let chat: Chat
+    let onDelete: () -> Void
     
     var body: some View {
         HStack {
@@ -48,23 +62,12 @@ struct ChatCell: View {
                     .lineLimit(1)
             }.padding().foregroundStyle(.white)
             Spacer()
+            Button {
+                onDelete() //Present alert, in real production this is not an ideal way to do this but is okay for testing
+            } label: {
+                Image(systemName: "trash")
+                .foregroundStyle(.red)
+            }.buttonStyle(.plain)
         }.padding().neon(.allCases.randomElement() ?? .red)
-    }
-}
-
-
-@Observable
-class ChatsController {
-    var chats: [Chat] = []
-    
-    //Todo add name param. or option to write name on create & persist data but UI looks good :)
-    func createChat() -> Chat {
-        let chat = Chat()
-        chats.append(chat)
-        return chat
-    }
-    
-    func deleteChat(_ chat: Chat) {
-        chats.removeAll { $0.id == chat.id }
     }
 }

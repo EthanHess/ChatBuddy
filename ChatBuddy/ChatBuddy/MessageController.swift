@@ -146,7 +146,7 @@ class MessageController  {
 }
 
 
-struct Message : Identifiable {
+struct Message : Identifiable, Codable {
     var id: Int
     var messageBody : String
     var authourUID : Int
