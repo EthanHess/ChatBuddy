@@ -7,16 +7,50 @@
 
 import SwiftUI
  
+//struct ChatsTable: View {
+//    //Should live top level, rearchitect after test
+//    @State private var chatsController = ChatsController()
+//    @Environment(MessageController.self) var messageController
+//    
+//    var body: some View {
+//        NavigationStack {
+//            ScrollView(.vertical) {
+//                LazyVStack {
+//                    ForEach(chatsController.chats) { chat in
+//                        NavigationLink(destination: ChatView(chat: chat, nlm: <#NeuralLanguageModel#>).environment(messageController)) {
+//                            ChatCell(chat: chat, onDelete: {
+//                                chatsController.deleteChat(chat)
+//                            })
+//                        }
+//                    }
+//                }
+//            }
+//            .padding()
+//            .navigationTitle("Chats")
+//            .toolbar {
+//                Button("New Chat") {
+//                    _ = chatsController.createChat()
+//                }
+//            }
+//        }
+//    }
+//}
+
 struct ChatsTable: View {
-    //Should live top level, rearchitect after test
-    @State private var chatsController = ChatsController()
-    
+    @Environment(NeuralLanguageModel.self) private var nlm
+    @Environment(ChatsController.self) private var chatsController
+
     var body: some View {
         NavigationStack {
+            if nlm.isTraining {
+                ProgressView("Training model...")
+            }
             ScrollView(.vertical) {
                 LazyVStack {
                     ForEach(chatsController.chats) { chat in
-                        NavigationLink(destination: ChatView(chat: chat)) {
+                        NavigationLink {
+                            ChatView(chat: chat, nlm: nlm, chatsController: chatsController)
+                        } label: {
                             ChatCell(chat: chat, onDelete: {
                                 chatsController.deleteChat(chat)
                             })
@@ -27,9 +61,7 @@ struct ChatsTable: View {
             .padding()
             .navigationTitle("Chats")
             .toolbar {
-                Button("New Chat") {
-                    _ = chatsController.createChat()
-                }
+                Button("New Chat") { _ = chatsController.createChat() }
             }
         }
     }

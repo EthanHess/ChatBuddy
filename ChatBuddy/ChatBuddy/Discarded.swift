@@ -209,3 +209,121 @@
 //let res = slmTest(body)
 //        let res = "OMG Hey what's up n00b I'm a chatbot"
 // let res = nlmTest(body)
+
+
+
+
+//MARK: Old add message
+
+//        if isSending == true { return }
+//        isSending = true
+//        let message = Message(id: messages.count, messageBody: body, authourUID: authorUID)
+//        messages.append(message)
+
+//
+//DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
+//    guard let self = self else { return }
+//    let res = generateSentence(start: body.lowercased())
+//    let resMessage = Message(id: messages.count, messageBody: res, authourUID: 1)
+//    messages.append(resMessage)
+//    isSending = false
+//}
+
+
+//   // var messages : [Message] = []
+
+
+
+//Old app entry
+
+//@main
+//struct ChatBuddyApp: App {
+//    
+//    //MARK: Top level / App entry point, most shared objects (environment etc.) should go here to not be nested too deep unless there's a good reason
+//    
+//    //Also won't be created multiple times
+//    
+//    //MARK: layers = processing steps in an llm
+//    
+//    //MARK: 6 = input size (only with flat map, aside from that it would be 3), 4 = hidden layer -> 4 neurons (numbers in this case) 6 down (embedding size), 3 = output size, in this case the "cat" token
+//    
+//    //MARK: TODO test with [3, 4, 3]
+//    @State private var messageController : MessageController
+//    @State private var nlm = NeuralLanguageModel(layerSizes: [3, 8, 10])
+//    
+//    init() {
+//        
+//        let languageModel = NeuralLanguageModel(layerSizes: [3, 8, 10])
+//        _nlm = State(initialValue: languageModel)
+//
+//        _messageController = State(initialValue: MessageController(nlm: languageModel))
+//    }
+//    
+//    var body: some Scene {
+//        WindowGroup {
+////            ContentView().environment(nlm)
+////                .environment(messageController)
+//            
+//            ChatsTable().environment(messageController)
+//        }
+//    }
+//}
+//
+
+
+
+
+//From MessageController (old traning code)
+
+//MARK: May need more iterations for more accurate response
+
+//private func trainModel() {
+//    if nlm.loadWeights() { return }
+//    
+//    let sequences = [
+//        ["cat", "sat", "on", "the", "mat", "<end>"],
+//        ["dog", "ran", "in", "the", "park", "<end>"],
+//        ["cat", "ran", "in", "the", "park", "<end>"],
+//        ["dog", "sat", "on", "the", "mat", "<end>"]
+//    ]
+//    
+//    var pairs: [([String], String)] = []
+//    for sequence in sequences {
+//        for i in 1..<sequence.count {
+//            let context = Array(sequence[0..<i])
+//            let target = sequence[i]
+//            pairs.append((context, target))
+//        }
+//    }
+//    
+//    for _ in 0..<100000 {
+//        for (context, target) in pairs.shuffled() {
+//            let targetIndex = nlm.tokens.firstIndex(of: target) ?? 0
+//            nlm.train(input: context, targetIndex: targetIndex, learningRate: 0.001)
+//        }
+//    }
+//    
+//    nlm.saveWeights()
+//    
+//    //MARK: Test
+////        let probs = nlm.forward(["dog", "ran", "on"])
+////        print("probs: \(zip(nlm.tokens, probs).map { "\($0.0): \(String(format: "%.3f", $0.1))" })")
+//}
+
+
+//MARK: Now doing this and train() in NLM
+//private func setUpTestData() {
+//    nlm.tokens = ["cat", "sat", "on", "the", "mat", "dog", "ran", "park", "in", "<end>"]
+//    nlm.embeddings = [
+//        "cat":   [1.0, 0.0, 0.0],
+//        "sat":   [0.0, 1.0, 0.0],
+//        "on":    [0.0, 0.0, 1.0],
+//        "the":   [0.5, 0.5, 0.0],
+//        "mat":   [0.0, 0.5, 0.5],
+//        "dog":   [0.9, 0.1, 0.2],
+//        "ran":   [0.1, 0.9, 0.1],
+//        "park":  [0.2, 0.3, 0.9],
+//        "in": [0.3, 0.7, 0.4],
+//        "<end>": [0.0, 0.0, 0.0]
+//    ]
+//}

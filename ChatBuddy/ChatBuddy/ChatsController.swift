@@ -43,4 +43,16 @@ class ChatsController {
               let decoded = try? JSONDecoder().decode([Chat].self, from: data) else { return }
         chats = decoded
     }
+    
+    //MARK: error handling in case of failure (for all functions eventually)
+    func addMessage(_ message: Message, toChat chatID: UUID) {
+        guard let index = chats.firstIndex(where: { $0.id == chatID }) else { return }
+        chats[index].messages.append(message)
+        chats[index].updateTitleIfNeeded()
+        saveChats()
+    }
+
+    func messages(forChat chatID: UUID) -> [Message] {
+        chats.first(where: { $0.id == chatID })?.messages ?? []
+    }
 }

@@ -133,6 +133,66 @@ class NeuralLanguageModel {
     func resetModel() {
         UserDefaults.standard.removeObject(forKey: "nlm_weights")
     }
+    
+    var isTraining = false
+
+    func prepare() {
+        guard !isTraining else { return }  // onAppear can fire more than once
+        setUpTestData()
+        isTraining = true
+        Task.detached(priority: .userInitiated) { [self] in
+            await trainModel()
+            await MainActor.run { isTraining = false }
+        }
+    }
+    
+    //If freezing too much try this
+    //nonisolated private func trainModel() { ... }/
+    
+    private func setUpTestData() {
+        tokens = ["cat", "sat", "on", "the", "mat", "dog", "ran", "park", "in", "<end>"]
+        embeddings = [
+            "cat":   [1.0, 0.0, 0.0],
+            "sat":   [0.0, 1.0, 0.0],
+            "on":    [0.0, 0.0, 1.0],
+            "the":   [0.5, 0.5, 0.0],
+            "mat":   [0.0, 0.5, 0.5],
+            "dog":   [0.9, 0.1, 0.2],
+            "ran":   [0.1, 0.9, 0.1],
+            "park":  [0.2, 0.3, 0.9],
+            "in":    [0.3, 0.7, 0.4],
+            "<end>": [0.0, 0.0, 0.0]
+        ]
+    }
+    
+    private func trainModel() {
+        if loadWeights() { return }
+        
+        let sequences = [
+            ["cat", "sat", "on", "the", "mat", "<end>"],
+            ["dog", "ran", "in", "the", "park", "<end>"],
+            ["cat", "ran", "in", "the", "park", "<end>"],
+            ["dog", "sat", "on", "the", "mat", "<end>"]
+        ]
+        
+        var pairs: [([String], String)] = []
+        for sequence in sequences {
+            for i in 1..<sequence.count {
+                let context = Array(sequence[0..<i])
+                let target = sequence[i]
+                pairs.append((context, target))
+            }
+        }
+        
+        for _ in 0..<100000 {
+            for (context, target) in pairs.shuffled() {
+                let targetIndex = tokens.firstIndex(of: target) ?? 0
+                train(input: context, targetIndex: targetIndex, learningRate: 0.001)
+            }
+        }
+        
+        saveWeights()
+    }
 }
 
 
